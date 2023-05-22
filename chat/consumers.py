@@ -7,9 +7,10 @@ from django.contrib.auth import get_user_model
 from chat.models import Chat,Message,Contact,FriendsChat
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
-user = get_user_model()
+
 
 class ChatConsumer(WebsocketConsumer):
+    user = get_user_model()
 
     def fetch_message(self,data):
         print(data["chaturl"])
@@ -225,6 +226,7 @@ class ChatConsumer(WebsocketConsumer):
         }
 
     def send_chat_message(self,data):
+        user = get_user_model()
         if data["chaturl"][0] == "_":
             print(data["chaturl"])
             author_name = data["from"]

@@ -1,16 +1,17 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 import uuid
+from django.conf import settings
 
 # Create your models here.
-user = get_user_model()
+
 def generate_unique_id():
     random_uuid = uuid.uuid4()
     unique_id = str(random_uuid.int)[:4]
     return unique_id
 
 class Contact(models.Model):
-    user = models.ForeignKey(user,on_delete=models.CASCADE, blank=True)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE, blank=True)
     friends = models.ManyToManyField('self',blank=True)
     slug= models.CharField(max_length=100, blank=True)
     online = models.DateTimeField(auto_now=True)

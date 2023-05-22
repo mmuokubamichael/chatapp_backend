@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 
 from pathlib import Path
-
+import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -49,6 +49,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'rest_auth',
+    'cloudinary_storage',
+    'cloudinary',
 ]
 SITE_ID = 1
 MIDDLEWARE = [
@@ -56,6 +58,9 @@ MIDDLEWARE = [
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
+
+    'whitenoise.middleware.WhiteNoiseMiddleware',
+
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -83,29 +88,36 @@ TEMPLATES = [
 ]
 ASGI_APPLICATION = "chatApp.asgi.application"
 
+#CELERY_BROKER_URL = 'redis://127.0.0.1:6379'
+'''
 
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [("clustercfg.chatappredis.cducsq.use1.cache.amazonaws.com:6379", 6379)],
+            "hosts": [("127.0.0.1", 6379)],
         },
     },
 }
+
+'''
+
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [os.environ.get('REDIS_URL', 'redis://localhost:6379')],
+        },
+    },
+}
+
 WSGI_APPLICATION = 'chatApp.wsgi.application'
 
 
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
-'''
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
 
-'''
 
 
 DATABASES = {
@@ -118,6 +130,18 @@ DATABASES = {
         'PORT':5432,
     }
 }
+'''
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
+}
+
+
+
+'''
 
 
 # Password validation
@@ -159,13 +183,17 @@ STATICFILES_DIRS =[
     # BASE_DIR / 'chat_app/build/static'
 ]
 MEDIA_URL = '/chatapp/'
-#MEDIA_ROOT  = 'media/'
+MEDIA_ROOT  = 'media/'
+
+'''
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 CLOUDINARY_STORAGE = {
     'CLOUD_NAME': 'dswnncpmh',
     'API_KEY': '499262585992861',
     'API_SECRET': 'nTCQ4BucaFU3xeuYGhW4J9vJ-d0',
 }
+'''
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
@@ -191,6 +219,6 @@ CSRF_TRUSTED_ORIGINS = [
     'http://44.203.89.64',
     'http://54.146.147.67',
     'http://127.0.0.1:8000/',
-    
+    'http://localhost:3000'
 
 ]

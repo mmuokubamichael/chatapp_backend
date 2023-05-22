@@ -30,7 +30,6 @@ Django==4.0.4
 django-allauth==0.52.0
 django-celery-beat==2.3.0
 django-celery-results==2.4.0
-django-channels==0.7.0
 django-ckeditor==6.4.0
 django-cloudinary-storage==0.3.0
 django-cors-headers==3.14.0
@@ -54,7 +53,7 @@ oauthlib==3.2.2
 packaging==21.3
 Pillow==9.1.1
 prompt-toolkit==3.0.31
-psycopg2==2.9.4
+psycopg2-binary==2.9.4
 pyasn1==0.4.8
 pyasn1-modules==0.2.8
 pycparser==2.21
@@ -75,7 +74,6 @@ soupsieve==2.3.2.post1
 sqlparse==0.4.2
 stripe==5.1.1
 Twisted==22.8.0
-twisted-iocpsupport==1.0.2
 txaio==22.2.1
 typing-extensions==4.4.0
 tzdata==2022.1
