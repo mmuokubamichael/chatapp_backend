@@ -58,7 +58,7 @@ def joinChat(request,slug):
     get_user_contact = Contact.objects.get(user__username = request.data["participants"])
     get_chat.participants.add(get_user_contact)
     get_chat.save()
-    user_online = OnlineforChannels.objects.create(group=get_chat,participant=get_user_contact)
+    user_online = OnlineforChannels.objects.get_or_create(group=get_chat,participant=get_user_contact)
     serializer_class = ChatSerializer(get_chat)
     return Response(serializer_class.data)
 
@@ -70,9 +70,9 @@ def addFriend(request,slug):
     friendContact = Contact.objects.get(user__username=friend)
     userContact.friends.add(friendContact)
     friendContact.friends.add(userContact)
-    friendChat = FriendsChat.objects.create(sender=userContact,reciever=friendContact)
-    onlineuserStatus= Onlineforfriend.objects.create(friendchat=friendChat,participant=userContact)
-    onlineFriendStatus= Onlineforfriend.objects.create(friendchat=friendChat,participant=friendContact)
+    friendChat = FriendsChat.objects.get_or_create(sender=userContact,reciever=friendContact)
+    onlineuserStatus= Onlineforfriend.objects.get_or_create(friendchat=friendChat,participant=userContact)
+    onlineFriendStatus= Onlineforfriend.objects.get_or_create(friendchat=friendChat,participant=friendContact)
     serializer_friend = FriendSerializer(friendChat)
     return Response(serializer_friend.data)
 
@@ -87,14 +87,16 @@ def deleteFriend(request,slug):
     friendContact.friends.remove(userContact)
     friendChat = FriendsChat.objects.filter(sender=userContact,reciever=friendContact)
     print(friendChat)
-    onlineuserStatus= Onlineforfriend.objects.filter(friendchat=friendChat[0],participant=userContact)
-    onlineFriendStatus= Onlineforfriend.objects.filter(friendchat=friendChat[0],participant=friendContact)
-    onlineuserStatus[0].delete()
-    onlineFriendStatus[0].delete()
-    print("deleted")
-    serializer_friend = FriendSerializer(friendChat[0])
-    friendChat[0].delete()
-    return Response(serializer_friend.data)
+    if friendChat.exists():
+        onlineuserStatus= Onlineforfriend.objects.filter(friendchat=friendChat[0],participant=userContact)
+        onlineFriendStatus= Onlineforfriend.objects.filter(friendchat=friendChat[0],participant=friendContact)
+        onlineuserStatus[0].delete()
+        onlineFriendStatus[0].delete()
+        print("deleted")
+        serializer_friend = FriendSerializer(friendChat[0])
+        friendChat[0].delete()
+        return Response(serializer_friend.data)
+    return JsonResponse({"deleted":"ok"})
 
 @api_view(['PUT',])
 def acceptfriendrequest(request,slug):
@@ -121,14 +123,17 @@ def rejectFriendRequest(request,slug):
     friendContact = Contact.objects.get(user__username=friend)
     userContact.friends.remove(friendContact)
     friendContact.friends.remove(userContact)
-    friendChat = FriendsChat.objects.get(sender=friendContact,reciever=userContact)
-    onlineuserStatus= Onlineforfriend.objects.get(friendchat=friendChat,participant=userContact)
-    onlineFriendStatus= Onlineforfriend.objects.get(friendchat=friendChat,participant=friendContact)
-    onlineuserStatus.delete()
-    onlineFriendStatus.delete()
-    serializer_friend = FriendSerializer(friendChat)
-    friendChat.delete()
-    return Response(serializer_friend.data)
+    friendChat = FriendsChat.objects.filter(sender=friendContact,reciever=userContact)
+    if friendChat.exists():
+
+        onlineuserStatus= Onlineforfriend.objects.get(friendchat=friendChat[0],participant=userContact)
+        onlineFriendStatus= Onlineforfriend.objects.get(friendchat=friendChat[0],participant=friendContact)
+        onlineuserStatus.delete()
+        onlineFriendStatus.delete()
+        serializer_friend = FriendSerializer(friendChat[0])
+        friendChat[0].delete()
+        return Response(serializer_friend.data)
+    return JsonResponse({"deleted":"ok"})
     
     
 class ChatCreateView(CreateAPIView):

@@ -31,7 +31,7 @@ class ChatSerializer(serializers.ModelSerializer):
         chat.participants.add(user_contact)
         chat.admin.add(user_contact)
         chat.save()
-        onlineuserstatus = OnlineforChannels.objects.create(group=chat,participant=user_contact)
+        onlineuserstatus = OnlineforChannels.objects.get_or_create(group=chat,participant=user_contact)
         return chat
 
 
