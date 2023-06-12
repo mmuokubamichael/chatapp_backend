@@ -13,6 +13,8 @@ from django.db.models import Q
 import uuid
 import os
 import cloudinary.uploader
+from django.utils.decorators import method_decorator
+from corsheaders.decorators import cors_headers
 
 def generate_unique_id():
     random_uuid = uuid.uuid4()
@@ -29,6 +31,9 @@ def get_user_contact(username):
     user_contact = get_object_or_404(Contact,user=current_user)
     return user_contact
 
+
+
+@method_decorator(cors_headers(), name='dispatch')
 class ChatListView(ListAPIView):
     serializer_class = ChatSerializer
     permission_classes = (permissions.AllowAny,)
@@ -39,7 +44,8 @@ class ChatListView(ListAPIView):
             contact = get_user_contact(username)
             get_user_chats = contact.chats.all()
         return get_user_chats
-    
+
+@method_decorator(cors_headers(), name='dispatch')
 class FriendListView(ListAPIView):
     serializer_class = FriendSerializer
     permission_classes = (permissions.AllowAny,)
@@ -50,7 +56,8 @@ class FriendListView(ListAPIView):
             contact = get_user_contact(username)
             user_friends = FriendsChat.objects.filter(Q(sender=contact)|Q(reciever=contact))
         return user_friends
-  
+
+@cors_headers()  
 @api_view(['PUT',])
 def joinChat(request,slug):
     print(request.data["participants"])
@@ -58,10 +65,11 @@ def joinChat(request,slug):
     get_user_contact = Contact.objects.get(user__username = request.data["participants"])
     get_chat.participants.add(get_user_contact)
     get_chat.save()
-    user_online = OnlineforChannels.objects.get_or_create(group=get_chat,participant=get_user_contact)
+    user_online,_ = OnlineforChannels.objects.get_or_create(group=get_chat,participant=get_user_contact)
     serializer_class = ChatSerializer(get_chat)
     return Response(serializer_class.data)
 
+@cors_headers() 
 @api_view(['PUT',])
 def addFriend(request,slug):
     user=request.data["currentuser"]
@@ -70,12 +78,13 @@ def addFriend(request,slug):
     friendContact = Contact.objects.get(user__username=friend)
     userContact.friends.add(friendContact)
     friendContact.friends.add(userContact)
-    friendChat = FriendsChat.objects.get_or_create(sender=userContact,reciever=friendContact)
-    onlineuserStatus= Onlineforfriend.objects.get_or_create(friendchat=friendChat,participant=userContact)
-    onlineFriendStatus= Onlineforfriend.objects.get_or_create(friendchat=friendChat,participant=friendContact)
+    friendChat,created = FriendsChat.objects.get_or_create(sender=userContact,reciever=friendContact)
+    onlineuserStatus,created= Onlineforfriend.objects.get_or_create(friendchat=friendChat,participant=userContact)
+    onlineFriendStatus,created= Onlineforfriend.objects.get_or_create(friendchat=friendChat,participant=friendContact)
     serializer_friend = FriendSerializer(friendChat)
     return Response(serializer_friend.data)
 
+@cors_headers() 
 @api_view(['POST',])
 def deleteFriend(request,slug):
     print(request.data)
@@ -98,6 +107,7 @@ def deleteFriend(request,slug):
         return Response(serializer_friend.data)
     return JsonResponse({"deleted":"ok"})
 
+@cors_headers() 
 @api_view(['PUT',])
 def acceptfriendrequest(request,slug):
     print(request.data)
@@ -114,6 +124,7 @@ def acceptfriendrequest(request,slug):
     serializer_friend = FriendSerializer(friendChat)
     return Response(serializer_friend.data)
 
+@cors_headers() 
 @api_view(['POST',])
 def rejectFriendRequest(request,slug):
     print(request.data)
@@ -135,13 +146,13 @@ def rejectFriendRequest(request,slug):
         return Response(serializer_friend.data)
     return JsonResponse({"deleted":"ok"})
     
-    
+@method_decorator(cors_headers(), name='dispatch')    
 class ChatCreateView(CreateAPIView):
     queryset = Chat.objects.all()
     serializer_class = ChatSerializer
     permission_classes = (permissions.IsAuthenticated, )
 
-
+@cors_headers() 
 @api_view(['GET',])
 def unreadMessagesChannels(request,slug):
     userContact = Contact.objects.get(user__username=slug)
@@ -179,6 +190,7 @@ def unreadMessagesChannels(request,slug):
 
     return JsonResponse({"unreadChat":data})
 
+@cors_headers() 
 @api_view(['PUT',])
 def updateOnlinechatState(request,slug):
     user=request.data["currentuser"]
@@ -199,7 +211,7 @@ def updateOnlinechatState(request,slug):
             return JsonResponse({"unreadChat":"ok"})
     return JsonResponse({"unreadChat":"error"})
 
-
+@cors_headers() 
 @api_view(['PUT',])
 def updateProfileImage(request,slug):
     print(request.data)
@@ -232,7 +244,7 @@ def updateProfileImage(request,slug):
             return JsonResponse({"saveImage":"success"})
         return Response(serializer.errors)
 
-
+@cors_headers() 
 @api_view(['DELETE',])
 def deleteProfileImage(request,slug):
     userContact = Contact.objects.get(user__username=slug)
@@ -242,6 +254,7 @@ def deleteProfileImage(request,slug):
     print("sucesss")
     return Response(serializer.data)
 
+@cors_headers() 
 @api_view(['GET',])
 def getUserProfileImage(request,slug):
     userContact = Contact.objects.get(user__username=slug)
@@ -249,6 +262,7 @@ def getUserProfileImage(request,slug):
     serializer = UserContactSerializer(userContact)
     return Response(serializer.data)
 
+@cors_headers() 
 @api_view(['POST',])
 def exitGroup(request,slug):
     print(request.data)
@@ -266,7 +280,7 @@ def exitGroup(request,slug):
         return JsonResponse({"removed":"success"})
     return JsonResponse({"removed":"error"})
 
-
+@cors_headers() 
 @api_view(['POST',])
 def restrictUser(request,slug):
     user=request.data["currentuser"]
@@ -278,6 +292,7 @@ def restrictUser(request,slug):
     return JsonResponse({"restricted":userContact.user.username})
 
 
+@cors_headers() 
 @api_view(['POST',])
 def unrestrictUser(request,slug):
     user=request.data["currentuser"]
@@ -288,6 +303,7 @@ def unrestrictUser(request,slug):
     return JsonResponse({"unrestricted":userContact.user.username})
 
 
+@cors_headers() 
 @api_view(['POST',])
 def blockUser(request,slug):
     user=request.data["currentuser"]
@@ -300,6 +316,7 @@ def blockUser(request,slug):
     return JsonResponse({"blocked":"success"})
 
 
+@cors_headers() 
 @api_view(['POST',])
 def unblockUser(request,slug):
     user=request.data["currentuser"]

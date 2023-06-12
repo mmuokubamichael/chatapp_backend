@@ -203,7 +203,9 @@ ACCOUNT_EMAIL_VERIFICATION = "none"
 ACCOUNT_EMAIL_REQUIRED = False
 ACCOUNT_AUTHENTICATION_METHOD ="username"
 
-CORS_ORIGIN_WHITELIST = ('http://127.0.0.1:8000','http://localhost:3000','http://44.203.89.64','http://54.146.147.67')
+CORS_ALLOW_ALL_ORIGINS = True
+
+#CORS_ORIGIN_WHITELIST = ('http://127.0.0.1:8000','http://localhost:3000','http://44.203.89.64','http://54.146.147.67','https://demo-webchatapp.online/','https://www.demo-webchatapp.online/')
 CSRF_COOKIE_NAME = "csrftoken"
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
@@ -219,6 +221,8 @@ CSRF_TRUSTED_ORIGINS = [
     'http://44.203.89.64',
     'http://54.146.147.67',
     'http://127.0.0.1:8000/',
-    'http://localhost:3000'
+    'http://localhost:3000',
+    'https://demo-webchatapp.online/',
+    'https://www.demo-webchatapp.online/'
 
 ]
